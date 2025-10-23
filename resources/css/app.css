@@ -1,0 +1,139 @@
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
+
+/* === SOURCES DE VUES === */
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+/* === VARIANTE DARK MODE === */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* === POLICE DE BASE === */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+
+/* === THÈME ALLOAPPART ÉLÉGANT === */
+/* === STYLE GÉNÉRAL CLAIR (par défaut) === */
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: #ffffff; /* ✅ Fond blanc */
+    color: #1c1c1c;            /* ✅ Texte gris foncé */
+    min-height: 100vh;
+}
+
+/* === THÈME SOMBRE OPTIONNEL === */
+.dark body {
+    background-color: #0f172a; /* ✅ Seulement si le mode dark est activé */
+    color: #e2e8f0;
+}
+
+
+/* === HERO SECTION === */
+.hero-section {
+    position: relative;
+    overflow: hidden;
+}
+.hero-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(15, 23, 42, 0.85));
+    z-index: 1;
+}
+.hero-section .hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* === EFFET GLASS === */
+.glass {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+}
+
+/* === BOUTONS === */
+.btn-gold {
+    background: linear-gradient(90deg, #facc15, #fbbf24);
+    color: #1e1e1e;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+}
+.btn-gold:hover {
+    background: linear-gradient(90deg, #fbbf24, #facc15);
+    transform: scale(1.05);
+}
+
+/* === TEXTE === */
+.text-gold {
+    color: #facc15;
+}
+.text-white {
+    color: #ffffff;
+}
+
+/* === CARTES === */
+.bg-glass {
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+}
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 25px rgba(250, 204, 21, 0.2);
+}
+
+/* === PAGINATION === */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+.pagination .page-link {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #f8fafc;
+    border-radius: 8px;
+}
+.pagination .page-link:hover {
+    background: #facc15;
+    color: #0f172a;
+}
+
+/* === ANIMATIONS === */
+@keyframes fadeUp {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+.hero-content {
+    animation: fadeUp 1s ease-out forwards;
+}
+/* --- Amélioration des cartes --- */
+.card-details {
+  background: linear-gradient(to bottom, rgba(30,41,59,0.85), rgba(17,24,39,0.95));
+  color: #f8fafc;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.card-details h3 {
+  color: #f8fafc;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+.card-details p {
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+
