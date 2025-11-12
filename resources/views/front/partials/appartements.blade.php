@@ -8,28 +8,28 @@
             $isFavori = auth()->check() ? auth()->user()->favoris->contains($app->id) : false;
         @endphp
 
-        <a href="{{ route('front.show', $app->id) }}"
-           class="group relative bg-white/70 backdrop-blur-xl border border-[#f5e8b6]/30 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 hover:scale-[1.01]">
+        <div class="group relative bg-white/70 backdrop-blur-xl border border-[#f5e8b6]/30 rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-1 hover:scale-[1.01]">
 
             {{-- 🏙️ Image principale --}}
             <div class="relative overflow-hidden">
-                <img src="{{ $imgUrl }}"
-                     alt="{{ $app->titre }}"
-                     class="h-56 w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out rounded-t-2xl">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-50"></div>
+                <a href="{{ route('front.show', $app->id) }}">
+                    <img src="{{ $imgUrl }}"
+                         alt="{{ $app->titre }}"
+                         class="h-56 w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out rounded-t-2xl">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-50"></div>
+                </a>
 
-                {{-- ❤️ Bouton favori (même visuel, mais fonctionnel) --}}
-                <form method="POST"
-                      action="{{ route('favoris.toggle', $app->id) }}"
-                      class="absolute top-3 right-3"
-                      onsubmit="return handleFavori(event)">
+                {{-- ❤️ Bouton favori (AJAX + redirection si non connecté) --}}
+                <form method="POST" action="{{ route('favoris.toggle', $app->id) }}"
+                      class="absolute top-3 right-3 favoris-form">
                     @csrf
                     <button type="submit"
                             class="bg-white/80 hover:bg-[#facc15]/90 text-gray-800 hover:text-black rounded-full p-2 shadow-md transition"
+                            data-id="{{ $app->id }}"
                             aria-label="Ajouter aux favoris">
                         <svg xmlns="http://www.w3.org/2000/svg"
-                             class="h-4 w-4 {{ $isFavori ? 'fill-[#b58900] stroke-[#b58900]' : '' }}"
-                             fill="{{ $isFavori ? '#b58900' : 'none' }}"
+                             class="h-4 w-4 transition-all duration-300"
+                             fill="{{ $isFavori ? '#facc15' : 'none' }}"
                              viewBox="0 0 24 24"
                              stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -61,18 +61,18 @@
                     {{ number_format($app->prix, 0, ',', ' ') }} FCFA / mois
                 </p>
 
-                {{-- 💡 Lien "Voir plus" animé --}}
                 <div class="mt-3">
-                    <span class="inline-flex items-center gap-1 text-xs text-[#b58900]/80 group-hover:text-[#b58900] transition-colors duration-300">
+                    <a href="{{ route('front.show', $app->id) }}"
+                       class="inline-flex items-center gap-1 text-xs text-[#b58900]/80 group-hover:text-[#b58900] transition-colors duration-300">
                         Voir plus
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"
                              fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
-                    </span>
+                    </a>
                 </div>
             </div>
-        </a>
+        </div>
     @empty
         <div class="col-span-4 text-center text-gray-500 py-20">
             <p class="text-base md:text-lg font-medium mb-2">😔 Aucun appartement disponible</p>
@@ -88,15 +88,72 @@
     </div>
 @endif
 
-{{-- 🔐 Script de redirection vers login si non connecté --}}
+{{-- 💛 Script AJAX + redirection + toast --}}
+@push('scripts')
 <script>
-function handleFavori(event) {
+document.addEventListener('DOMContentLoaded', () => {
+    const csrf = '{{ csrf_token() }}';
     const isAuthenticated = @json(auth()->check());
-    if (!isAuthenticated) {
-        event.preventDefault();
-        window.location.href = "{{ route('login') }}";
-        return false;
+
+    document.querySelectorAll('.favoris-form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // 🚨 Vérifie la connexion AVANT envoi
+            if (!isAuthenticated) {
+                window.location.href = "{{ route('login') }}";
+                return;
+            }
+
+            const button = form.querySelector('button');
+            const svg = button.querySelector('svg');
+            const appartementId = button.dataset.id;
+
+            try {
+                const res = await fetch(`/favoris/${appartementId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrf,
+                        'Accept': 'application/json',
+                    },
+                });
+
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+
+                svg.setAttribute('fill', data.added ? '#facc15' : 'none');
+                showToast(data.message);
+            } catch {
+                showToast('Une erreur est survenue.');
+            }
+        });
+    });
+
+    // ✨ Fonction toast
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.textContent = msg;
+        toast.className = `
+            fixed bottom-6 right-6 bg-[#facc15] text-[#1C1C1C]
+            px-5 py-3 rounded-xl shadow-lg font-semibold text-sm z-50
+            transition-all duration-500 animate-fadeIn
+        `;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(20px)';
+            setTimeout(() => toast.remove(), 400);
+        }, 2000);
     }
-    return true;
-}
+});
 </script>
+
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: fadeIn .3s ease-out forwards; }
+</style>
+@endpush
