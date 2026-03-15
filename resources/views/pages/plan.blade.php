@@ -28,10 +28,10 @@
                 <i class="fa-solid fa-home text-[#facc15]"></i> Accueil & Annonces
             </h2>
             <ul class="list-plan">
-                <li><a href="{{ route('front.index') }}" class="link-plan">🏡 Accueil</a></li>
-                <li><a href="{{ route('front.index') }}?q=Dakar" class="link-plan">📍 Appartements à Dakar</a></li>
-                <li><a href="{{ route('front.index') }}?min=0&max=250000" class="link-plan">💰 Logements ≤ 250 000 FCFA</a></li>
-                <li><a href="{{ route('dashboard') }}" class="link-plan">👤 Mon espace</a></li>
+                <li><a href="{{ route('front.index') }}" class="link-plan"><i class="fa-solid fa-house text-[#facc15] mr-2"></i>Accueil</a></li>
+                <li><a href="{{ route('front.index') }}?q=Dakar" class="link-plan"><i class="fa-solid fa-location-dot text-[#facc15] mr-2"></i>Appartements à Dakar</a></li>
+                <li><a href="{{ route('front.index') }}?min=0&max=250000" class="link-plan"><i class="fa-solid fa-sack-dollar text-[#facc15] mr-2"></i>Logements ≤ 250 000 FCFA</a></li>
+                <li><a href="{{ route('dashboard') }}" class="link-plan"><i class="fa-solid fa-user text-[#facc15] mr-2"></i>Mon espace</a></li>
             </ul>
         </div>
 
@@ -41,11 +41,11 @@
                 <i class="fa-solid fa-scale-balanced text-[#facc15]"></i> Informations légales
             </h2>
             <ul class="list-plan">
-                <li><a href="{{ route('conditions') }}" class="link-plan">📜 Conditions d’utilisation</a></li>
-                <li><a href="{{ route('confidentialite') }}" class="link-plan">🔒 Politique de confidentialité</a></li>
-                <li><a href="{{ route('fonctionnement') }}" class="link-plan">⚙️ Fonctionnement du site</a></li>
-                <li><a href="{{ route('apropos') }}" class="link-plan">🏢 À propos d’AlloAppart</a></li>
-                <li><a href="{{ route('plan') }}" class="link-plan">🗺️ Plan du site</a></li>
+                <li><a href="{{ route('conditions') }}" class="link-plan"><i class="fa-solid fa-file-lines text-[#facc15] mr-2"></i>Conditions d’utilisation</a></li>
+                <li><a href="{{ route('confidentialite') }}" class="link-plan"><i class="fa-solid fa-lock text-[#facc15] mr-2"></i>Politique de confidentialité</a></li>
+                <li><a href="{{ route('fonctionnement') }}" class="link-plan"><i class="fa-solid fa-gear text-[#facc15] mr-2"></i>Fonctionnement du site</a></li>
+                <li><a href="{{ route('apropos') }}" class="link-plan"><i class="fa-solid fa-building text-[#facc15] mr-2"></i>À propos d’AlloAppart</a></li>
+                <li><a href="{{ route('plan') }}" class="link-plan"><i class="fa-solid fa-map text-[#facc15] mr-2"></i>Plan du site</a></li>
             </ul>
         </div>
 
@@ -55,12 +55,12 @@
                 <i class="fa-solid fa-envelope text-[#facc15]"></i> Support & Réseaux
             </h2>
             <ul class="list-plan">
-                <li><a href="{{ route('contact') }}" class="link-plan">📩 Nous contacter</a></li>
-                <li><a href="mailto:contact@alloappart.sn" class="link-plan">📧 contact@alloappart.sn</a></li>
-                <li><a href="{{ route('social.twitter') }}" target="_blank" rel="noopener" class="link-plan">🐦 Twitter / X</a></li>
-                <li><a href="{{ route('social.instagram') }}" target="_blank" rel="noopener" class="link-plan">📸 Instagram</a></li>
-                <li><a href="{{ route('social.facebook') }}" target="_blank" rel="noopener" class="link-plan">📘 Facebook</a></li>
-                <li><a href="{{ route('social.tiktok') }}" target="_blank" rel="noopener" class="link-plan">🎵 TikTok</a></li>
+                <li><a href="{{ route('contact') }}" class="link-plan"><i class="fa-solid fa-envelope text-[#facc15] mr-2"></i>Nous contacter</a></li>
+                <li><a href="mailto:contact@alloappart.sn" class="link-plan"><i class="fa-solid fa-at text-[#facc15] mr-2"></i>contact@alloappart.sn</a></li>
+                <li><a href="{{ route('social.twitter') }}" target="_blank" rel="noopener" class="link-plan"><i class="fa-brands fa-x-twitter text-[#facc15] mr-2"></i>Twitter / X</a></li>
+                <li><a href="{{ route('social.instagram') }}" target="_blank" rel="noopener" class="link-plan"><i class="fa-brands fa-instagram text-[#facc15] mr-2"></i>Instagram</a></li>
+                <li><a href="{{ route('social.facebook') }}" target="_blank" rel="noopener" class="link-plan"><i class="fa-brands fa-facebook text-[#facc15] mr-2"></i>Facebook</a></li>
+                <li><a href="{{ route('social.tiktok') }}" target="_blank" rel="noopener" class="link-plan"><i class="fa-brands fa-tiktok text-[#facc15] mr-2"></i>TikTok</a></li>
             </ul>
         </div>
     </div>

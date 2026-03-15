@@ -65,15 +65,21 @@
         <h2 class="section-title"><i class="fa-solid fa-heart text-[#facc15]"></i> 4. Nos valeurs</h2>
         <div class="grid md:grid-cols-3 gap-6 mt-5">
             <div class="value-card">
-                <h3 class="font-semibold text-[#b58900] mb-2">🌍 Transparence</h3>
+                <h3 class="font-semibold text-[#b58900] mb-2">
+                    <i class="fa-solid fa-eye text-[#facc15] mr-2"></i>Transparence
+                </h3>
                 <p>Nous garantissons une information claire et vérifiée pour chaque annonce publiée sur la plateforme.</p>
             </div>
             <div class="value-card">
-                <h3 class="font-semibold text-[#b58900] mb-2">🤝 Confiance</h3>
+                <h3 class="font-semibold text-[#b58900] mb-2">
+                    <i class="fa-solid fa-handshake text-[#facc15] mr-2"></i>Confiance
+                </h3>
                 <p>Chaque interaction entre bailleur et locataire est encadrée pour protéger les deux parties.</p>
             </div>
             <div class="value-card">
-                <h3 class="font-semibold text-[#b58900] mb-2">⚙️ Innovation</h3>
+                <h3 class="font-semibold text-[#b58900] mb-2">
+                    <i class="fa-solid fa-lightbulb text-[#facc15] mr-2"></i>Innovation
+                </h3>
                 <p>Nous intégrons les dernières technologies du numérique pour fluidifier les recherches et simplifier la gestion des logements.</p>
             </div>
         </div>

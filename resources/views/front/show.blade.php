@@ -24,12 +24,15 @@
     // “Similaires” facultatif
     $similaires = $similaires ?? null;
 
-    // “Avis” facultatif — structure attendue: collection avec ->note (1..5), ->commentaire, ->auteur, ->created_at
+    // “Avis” facultatif
     $avis = $avis ?? collect([]);
     $noteMoy = $avis->count() ? round($avis->avg('note'), 1) : null;
 
-    // Compteur de vues (facultatif) si transmis par le contrôleur
+    // Compteur de vues transmis par le contrôleur
     $views = $views ?? null;
+
+    // Favori actuel
+    $isFavori = auth()->check() ? auth()->user()->favoris->contains($appartement->id) : false;
 @endphp
 
 {{-- ======================= FIL D’ARIANE ======================= --}}
@@ -92,17 +95,34 @@
             </template>
         </div>
 
-        {{-- Label compteur + favori + partager (coin haut) --}}
+        {{-- Label compteur + favori + partager --}}
         <div class="absolute top-3 right-3 flex items-center gap-2">
             <div class="px-2 py-1 rounded-full bg-black/50 text-white text-xs">
                 <span x-text="(index+1)+' / '+images.length"></span>
             </div>
 
-            {{-- Favori (non relié) --}}
-            <button title="Ajouter aux favoris"
-                class="h-9 w-9 grid place-items-center rounded-full bg-black/40 hover:bg-black/60 text-white transition">
-                <i class="fa-regular fa-heart"></i>
-            </button>
+            {{-- ✅ Favori (AJAX) --}}
+            <form method="POST" action="{{ route('favoris.toggle', $appartement->id) }}"
+                  class="favori-toggle-form">
+                @csrf
+                <button type="submit" title="Ajouter aux favoris"
+                    class="h-9 w-9 grid place-items-center rounded-full bg-black/40 hover:bg-black/60 text-white transition"
+                    data-appartement-id="{{ $appartement->id }}"
+                    aria-label="Favori">
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                         class="h-5 w-5 transition-all duration-300 favori-heart"
+                         fill="{{ $isFavori ? '#facc15' : 'none' }}"
+                         viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                              2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09
+                              C13.09 3.81 14.76 3 16.5 3
+                              19.58 3 22 5.42 22 8.5
+                              c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                    </svg>
+                </button>
+            </form>
 
             {{-- Partage --}}
             <div x-data="{open:false}" class="relative">
@@ -189,25 +209,22 @@
     {{-- ========= COLONNE GAUCHE ========= --}}
     <div class="lg:col-span-2 space-y-8">
 
-        {{-- Infos clés / équipements / description --}}
         <div class="bg-white/70 backdrop-blur-xl border aa-border rounded-3xl p-6 md:p-8 shadow-lg">
             <div class="flex flex-wrap items-center gap-3 justify-between">
                 <h2 class="text-xl md:text-2xl font-semibold text-gray-900">À propos de ce logement</h2>
 
-                {{-- Labels premium facultatifs --}}
                 <div class="flex items-center gap-2">
                     @if($appartement->created_at && now()->diffInDays($appartement->created_at) <= 10)
                         <span class="px-2.5 py-1 text-xs rounded-full bg-[#fff5d6] text-[#b58900] border border-[#facc15]/50">Nouveau</span>
                     @endif
-                    @if($views)
+                    @if($views !== null)
                         <span class="px-2.5 py-1 text-xs rounded-full bg-gray-100 text-gray-700 border aa-border">
-                            {{ $views }} vues cette semaine
+                            {{ $views }} vues
                         </span>
                     @endif
                 </div>
             </div>
 
-            {{-- Badges caractéristiques --}}
             <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm mt-5">
                 <div class="flex items-center gap-2">
                     <span class="inline-grid place-items-center h-8 w-8 rounded-full bg-[#fff5d6] text-[#b58900]">
@@ -247,7 +264,6 @@
                 </div>
             </div>
 
-            {{-- Description --}}
             <div class="mt-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-2">Description</h3>
                 <p class="leading-relaxed text-gray-700">
@@ -255,7 +271,6 @@
                 </p>
             </div>
 
-            {{-- Équipements (exemples) --}}
             <div class="mt-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-3">Équipements</h3>
                 <ul class="grid sm:grid-cols-2 md:grid-cols-3 gap-2 text-gray-700 text-sm">
@@ -268,7 +283,6 @@
                 </ul>
             </div>
 
-            {{-- Lien signaler l’annonce (placeholder) --}}
             <div class="mt-6 text-sm">
                 <a href="#" class="inline-flex items-center gap-1 text-gray-500 hover:text-[#b58900] transition">
                     <i class="fa-regular fa-flag"></i> Signaler cette annonce
@@ -276,7 +290,6 @@
             </div>
         </div>
 
-        {{-- Carte --}}
         @if($appartement->adresse)
             <div class="bg-white/70 backdrop-blur-xl border aa-border rounded-3xl p-6 shadow-lg">
                 <div class="flex items-center justify-between">
@@ -297,7 +310,7 @@
             </div>
         @endif
 
-        {{-- Avis (facultatif) --}}
+        {{-- Avis --}}
         @if($avis->count())
             <div class="bg-white/70 backdrop-blur-xl border aa-border rounded-3xl p-6 shadow-lg">
                 <div class="flex items-center justify-between mb-3">
@@ -331,7 +344,6 @@
                     @endforeach
                 </div>
 
-                {{-- CTA Voir plus (placeholder) --}}
                 @if($avis->count() > 6)
                     <div class="mt-4">
                         <a href="#" class="text-sm text-[#b58900] hover:text-[#8a6a00] transition">Voir tous les avis →</a>
@@ -340,13 +352,12 @@
             </div>
         @endif
 
-        {{-- ⭐ Formulaire moderne pour laisser un avis --}}
+        {{-- Form avis --}}
         <div class="mt-10 bg-white/80 backdrop-blur-xl border aa-border rounded-3xl p-6 shadow-lg">
             <h3 class="text-xl font-semibold text-gray-900 mb-5 flex items-center gap-2">
                 <i class="fa-solid fa-pen text-[#b58900]"></i> Laisser un avis
             </h3>
 
-            {{-- ✅ Messages de session --}}
             @if(session('success'))
                 <div class="p-3 mb-4 text-green-800 bg-green-100 border border-green-300 rounded-xl">
                     {{ session('success') }}
@@ -360,13 +371,11 @@
             @endif
 
             @auth
-                {{-- ⭐ Système d’étoiles interactif --}}
-                <form action="{{ route('avis.store', $appartement->id) }}" method="POST" 
-                    x-data="{ rating: 0 }" 
+                <form action="{{ route('avis.store', $appartement->id) }}" method="POST"
+                    x-data="{ rating: 0 }"
                     class="space-y-5 animate-fadeIn">
                     @csrf
 
-                    {{-- Étoiles interactives --}}
                     <div class="flex items-center gap-2 justify-center md:justify-start text-3xl">
                         <template x-for="i in 5">
                             <button type="button"
@@ -381,7 +390,6 @@
                         <input type="hidden" name="note" :value="rating">
                     </div>
 
-                    {{-- Zone de texte --}}
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Votre commentaire</label>
                         <textarea name="commentaire" rows="4"
@@ -389,7 +397,6 @@
                             placeholder="Décrivez votre expérience avec ce logement..." required></textarea>
                     </div>
 
-                    {{-- Bouton d’envoi --}}
                     <div class="flex justify-center md:justify-start">
                         <button type="submit"
                             class="btn-gold px-6 py-2.5 rounded-full font-semibold hover:scale-[1.03] transition">
@@ -398,7 +405,6 @@
                     </div>
                 </form>
             @else
-                {{-- 🔒 Message pour les non connectés --}}
                 <div class="text-center text-gray-600 text-sm">
                     <a href="{{ route('login') }}" class="text-[#b58900] font-semibold hover:underline">
                         Connectez-vous
@@ -406,7 +412,6 @@
                 </div>
             @endauth
         </div>
-
 
         {{-- Similaires --}}
         @if($similaires && $similaires->count())
@@ -440,7 +445,6 @@
     <aside class="lg:col-span-1">
         <div class="sticky top-24 space-y-6">
 
-            {{-- Carte prix + actions + contact --}}
             <div class="bg-white/80 backdrop-blur-xl border aa-border rounded-3xl p-6 shadow-lg">
                 <div class="flex items-center justify-between">
                     <div>
@@ -449,10 +453,28 @@
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button title="Ajouter aux favoris"
-                            class="h-10 w-10 grid place-items-center rounded-full border aa-border hover:bg-gray-50">
-                            <i class="fa-regular fa-heart"></i>
-                        </button>
+                        {{-- ✅ Favori sticky (AJAX) --}}
+                        <form method="POST" action="{{ route('favoris.toggle', $appartement->id) }}"
+                              class="favori-toggle-form">
+                            @csrf
+                            <button type="submit"
+                                class="h-10 w-10 grid place-items-center rounded-full border aa-border hover:bg-gray-50"
+                                data-appartement-id="{{ $appartement->id }}"
+                                aria-label="Favori">
+                                <svg xmlns="http://www.w3.org/2000/svg"
+                                     class="h-5 w-5 transition-all duration-300 favori-heart"
+                                     fill="{{ $isFavori ? '#facc15' : 'none' }}"
+                                     viewBox="0 0 24 24"
+                                     stroke="currentColor" stroke-width="1.8">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                                          2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09
+                                          C13.09 3.81 14.76 3 16.5 3
+                                          19.58 3 22 5.42 22 8.5
+                                          c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                                </svg>
+                            </button>
+                        </form>
 
                         <div x-data="{open:false}" class="relative">
                             <button @click="open=!open" class="h-10 w-10 grid place-items-center rounded-full border aa-border hover:bg-gray-50" title="Partager">
@@ -479,7 +501,6 @@
                     </div>
                 </div>
 
-                {{-- CTA principal / message --}}
                 @auth
                     <form action="{{ route('front.message.send', $appartement->id) }}" method="POST" class="mt-4 space-y-3">
                         @csrf
@@ -499,15 +520,12 @@
                     </div>
                 @endguest
 
-
-                {{-- Bailleur --}}
                 <div class="mt-6 border-t aa-border pt-4">
                     <div class="text-sm text-gray-500 mb-1">Bailleur</div>
                     <div class="font-medium text-gray-900">{{ $appartement->bailleur->nom }}</div>
                     <div class="text-sm text-gray-600">{{ $appartement->bailleur->email }}</div>
                     <div class="text-sm text-gray-600">{{ $appartement->bailleur->telephone ?? 'Téléphone non fourni' }}</div>
 
-                    {{-- Lien vers ses autres annonces (si route dispo) --}}
                     @if(Route::has('front.index'))
                         <a href="{{ route('front.index', ['q' => $appartement->bailleur->nom]) }}"
                            class="mt-3 inline-flex items-center gap-1 text-sm text-[#b58900] hover:text-[#8a6a00] transition">
@@ -517,7 +535,6 @@
                 </div>
             </div>
 
-            {{-- Points de confiance --}}
             <div class="bg-white/70 backdrop-blur-xl border aa-border rounded-3xl p-5 shadow">
                 <ul class="space-y-2 text-sm text-gray-700">
                     <li class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-[#b58900]"></i> Paiements sécurisés</li>
@@ -558,10 +575,7 @@
     </a>
 </div>
 
-
-{{-- ✅ Fermeture du contenu principal --}}
 @endsection
-
 
 {{-- ======================= SEO JSON-LD ======================= --}}
 @section('seo')
@@ -588,9 +602,64 @@
 </script>
 @endsection
 
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const csrf = '{{ csrf_token() }}';
+    const isAuthenticated = @json(auth()->check());
+    const loginUrl = "{{ route('login') }}";
 
+    document.querySelectorAll('.favori-toggle-form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
+            if (!isAuthenticated) {
+                window.location.href = loginUrl;
+                return;
+            }
 
+            const btn = form.querySelector('button[data-appartement-id]');
+            const id = btn?.dataset?.appartementId;
 
+            try {
+                const res = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrf,
+                        'Accept': 'application/json',
+                    }
+                });
 
+                if (!res.ok) throw new Error();
+                const data = await res.json();
 
+                // 🔁 Sync des 2 coeurs sur la page
+                document.querySelectorAll(`button[data-appartement-id="${id}"] .favori-heart`)
+                    .forEach(svg => svg.setAttribute('fill', data.added ? '#facc15' : 'none'));
+
+                showToast(data.message || (data.added ? 'Ajouté aux favoris' : 'Retiré des favoris'));
+            } catch (err) {
+                showToast('Une erreur est survenue.');
+            }
+        });
+    });
+
+    function showToast(msg) {
+        const toast = document.createElement('div');
+        toast.textContent = msg;
+        toast.className = `
+            fixed bottom-6 right-6 bg-[#facc15] text-[#1C1C1C]
+            px-5 py-3 rounded-xl shadow-lg font-semibold text-sm z-50
+            transition-all duration-500
+        `;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(20px)';
+            setTimeout(() => toast.remove(), 400);
+        }, 2000);
+    }
+});
+</script>
+@endpush

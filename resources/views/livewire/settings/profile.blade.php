@@ -6,40 +6,43 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
 use Livewire\Volt\Component;
 
+use function Livewire\Volt\layout;
+use function Livewire\Volt\title;
+
+layout('layouts.front');
+title('Profil');
+
 new class extends Component {
-    public string $name = '';
+    public string $nom = '';
     public string $email = '';
 
-    /**
-     * Mount the component.
-     */
     public function mount(): void
     {
-        $this->name = Auth::user()->name;
-        $this->email = Auth::user()->email;
+        $u = Auth::user();
+        $this->nom = $u->nom ?? $u->name ?? '';
+        $this->email = $u->email ?? '';
     }
 
-    /**
-     * Update the profile information for the currently authenticated user.
-     */
     public function updateProfileInformation(): void
     {
         $user = Auth::user();
 
         $validated = $this->validate([
-            'name' => ['required', 'string', 'max:255'],
-
+            'nom' => ['required', 'string', 'max:255'],
             'email' => [
-                'required',
-                'string',
-                'lowercase',
-                'email',
-                'max:255',
-                Rule::unique(User::class)->ignore($user->id)
+                'required', 'string', 'lowercase', 'email', 'max:255',
+                Rule::unique(User::class)->ignore($user->id),
             ],
         ]);
 
-        $user->fill($validated);
+        // Supporte ton modèle (nom) ou starter kit (name)
+        if (array_key_exists('nom', $user->getAttributes())) {
+            $user->nom = $validated['nom'];
+        } else {
+            $user->name = $validated['nom'];
+        }
+
+        $user->email = $validated['email'];
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
@@ -47,70 +50,101 @@ new class extends Component {
 
         $user->save();
 
-        $this->dispatch('profile-updated', name: $user->name);
+        Session::flash('success', 'Profil mis à jour.');
     }
 
-    /**
-     * Send an email verification notification to the current user.
-     */
     public function resendVerificationNotification(): void
     {
         $user = Auth::user();
 
         if ($user->hasVerifiedEmail()) {
             $this->redirectIntended(default: route('dashboard', absolute: false));
-
             return;
         }
 
         $user->sendEmailVerificationNotification();
-
         Session::flash('status', 'verification-link-sent');
     }
-}; ?>
+};
+?>
 
-<section class="w-full">
-    @include('partials.settings-heading')
+<div class="aa-container mx-auto px-4 sm:px-6 py-10">
+    <div class="max-w-3xl mx-auto">
 
-    <x-settings.layout :heading="__('Profile')" :subheading="__('Update your name and email address')">
-        <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
-            <flux:input wire:model="name" :label="__('Name')" type="text" required autofocus autocomplete="name" />
-
-            <div>
-                <flux:input wire:model="email" :label="__('Email')" type="email" required autocomplete="email" />
-
-                @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail &&! auth()->user()->hasVerifiedEmail())
-                    <div>
-                        <flux:text class="mt-4">
-                            {{ __('Your email address is unverified.') }}
-
-                            <flux:link class="text-sm cursor-pointer" wire:click.prevent="resendVerificationNotification">
-                                {{ __('Click here to re-send the verification email.') }}
-                            </flux:link>
-                        </flux:text>
-
-                        @if (session('status') === 'verification-link-sent')
-                            <flux:text class="mt-2 font-medium !dark:text-green-400 !text-green-600">
-                                {{ __('A new verification link has been sent to your email address.') }}
-                            </flux:text>
-                        @endif
-                    </div>
-                @endif
-            </div>
-
-            <div class="flex items-center gap-4">
-                <div class="flex items-center justify-end">
-                    <flux:button variant="primary" type="submit" class="w-full" data-test="update-profile-button">
-                        {{ __('Save') }}
-                    </flux:button>
+        <div class="aa-shadow bg-white rounded-3xl border aa-border p-6 sm:p-8">
+            <div class="flex items-start justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-gray-900">Profil</h1>
+                    <p class="text-gray-600 mt-1">Modifie ton nom et ton e-mail.</p>
                 </div>
 
-                <x-action-message class="me-3" on="profile-updated">
-                    {{ __('Saved.') }}
-                </x-action-message>
+                <a href="{{ route('dashboard') }}"
+                   class="text-sm font-semibold text-[#b58900] hover:text-[#facc15] transition">
+                    Retour
+                </a>
             </div>
-        </form>
 
-        <livewire:settings.delete-user-form />
-    </x-settings.layout>
-</section>
+            @if (session('success'))
+                <div class="mt-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <form wire:submit="updateProfileInformation" class="mt-8 space-y-6">
+                <div class="grid gap-2">
+                    <label class="text-sm font-semibold text-gray-800">Nom complet</label>
+                    <input wire:model="nom" type="text" autocomplete="name" required
+                           class="w-full rounded-2xl border aa-border bg-white px-4 py-3 text-gray-900 placeholder-gray-400
+                                  focus:outline-none focus:ring-2 focus:ring-[#facc15]/40"
+                           placeholder="Ex: Malick Niang">
+                    @error('nom') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="grid gap-2">
+                    <label class="text-sm font-semibold text-gray-800">Email</label>
+                    <input wire:model="email" type="email" autocomplete="email" required
+                           class="w-full rounded-2xl border aa-border bg-white px-4 py-3 text-gray-900 placeholder-gray-400
+                                  focus:outline-none focus:ring-2 focus:ring-[#facc15]/40"
+                           placeholder="exemple@mail.com">
+                    @error('email') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
+
+                    @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !auth()->user()->hasVerifiedEmail())
+                        <div class="mt-3 rounded-2xl border aa-border bg-[#fffaf0] px-4 py-3 text-sm text-gray-700">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span>Ton adresse email n’est pas vérifiée.</span>
+                                <button type="button"
+                                        wire:click.prevent="resendVerificationNotification"
+                                        class="font-semibold text-[#b58900] hover:text-[#facc15] transition">
+                                    Renvoyer l’email
+                                </button>
+                            </div>
+
+                            @if (session('status') === 'verification-link-sent')
+                                <div class="mt-2 font-medium text-green-700">
+                                    Un nouveau lien a été envoyé.
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-end">
+                    <a href="{{ route('dashboard') }}"
+                       class="inline-flex justify-center rounded-2xl border aa-border px-5 py-3 font-semibold text-gray-800 hover:bg-gray-50 transition">
+                        Annuler
+                    </a>
+
+                    <button type="submit"
+                            class="inline-flex justify-center rounded-2xl px-6 py-3 font-extrabold aa-btn aa-shadow transition">
+                        Enregistrer
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="mt-8">
+            <livewire:settings.delete-user-form />
+        </div>
+
+    </div>
+</div>

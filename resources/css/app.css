@@ -1,3 +1,6 @@
+/* ✅ POLICE (les @import doivent être tout en premier) */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
+
 @import 'tailwindcss';
 @import '../../vendor/livewire/flux/dist/flux.css';
 
@@ -9,9 +12,6 @@
 
 /* === VARIANTE DARK MODE === */
 @custom-variant dark (&:where(.dark, .dark *));
-
-/* === POLICE DE BASE === */
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
 
 /* === THÈME ALLOAPPART ÉLÉGANT === */
 /* === STYLE GÉNÉRAL CLAIR (par défaut) === */
@@ -27,7 +27,6 @@ body {
     background-color: #0f172a; /* ✅ Seulement si le mode dark est activé */
     color: #e2e8f0;
 }
-
 
 /* === HERO SECTION === */
 .hero-section {
@@ -111,6 +110,7 @@ body {
 .hero-content {
     animation: fadeUp 1s ease-out forwards;
 }
+
 /* --- Amélioration des cartes --- */
 .card-details {
   background: linear-gradient(to bottom, rgba(30,41,59,0.85), rgba(17,24,39,0.95));
@@ -135,5 +135,38 @@ body {
 .animate-fadeIn {
   animation: fadeIn 0.4s ease-out;
 }
+/* ===== ANIMATIONS POUR LA PAGE DE CONNEXION ===== */
+@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+.animate-fadeInLeft {
+    animation: fadeInLeft 0.8s ease-out forwards;
+}
 
+@keyframes float {
+    0% { transform: translateY(0px) translateX(0px); }
+    50% { transform: translateY(-20px) translateX(10px); }
+    100% { transform: translateY(0px) translateX(0px); }
+}
+.animate-float {
+    animation: float 8s ease-in-out infinite;
+}
+.animate-float-delayed {
+    animation: float 10s ease-in-out infinite;
+    animation-delay: 2s;
+}
 
+@keyframes softBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+.animate-softBounce {
+    animation: softBounce 3s ease-in-out infinite;
+}

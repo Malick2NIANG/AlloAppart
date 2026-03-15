@@ -2,130 +2,108 @@
 
 namespace App\Models;
 
+use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmailContract
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, TwoFactorAuthenticatable;
 
-    /**
-     * Les champs autorisés à être remplis en masse (mass assignment)
-     */
     protected $fillable = [
         'nom',
         'email',
         'telephone',
-        'role',       // 'admin' | 'bailleur' | 'client'
+        'role',       // admin | bailleur | client
         'password',
         'adresse',
     ];
 
-    /**
-     * Désactivation de toute protection supplémentaire
-     * (corrige le problème "Field 'nom' doesn't have a default value")
-     */
-    protected $guarded = [];
-
-    /**
-     * Champs cachés lorsqu'on convertit l'objet en tableau ou JSON
-     */
     protected $hidden = [
         'password',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+    ];
+
+    protected $casts = [
+        'password' => 'hashed',
+        'email_verified_at' => 'datetime',
+        'two_factor_confirmed_at' => 'datetime',
     ];
 
     /**
-     * Conversion automatique des champs
+     * ✅ Compat starter-kit: certaines vues utilisent auth()->user()->name
+     * alors que ta colonne s'appelle "nom".
      */
-    protected $casts = [
-        'password' => 'hashed',
-    ];
+    public function getNameAttribute(): string
+    {
+        return (string) ($this->attributes['nom'] ?? '');
+    }
 
-    /* =======================================================
-     |                     RELATIONS
-     ======================================================= */
+    /**
+     * ✅ Utilisé par ton sidebar: auth()->user()->initials()
+     */
+    public function initials(): string
+    {
+        $name = trim($this->name);
+        if ($name === '') return '??';
 
-    // Appartements publiés par le bailleur
+        $parts = preg_split('/\s+/', $name);
+        $first = mb_substr($parts[0] ?? '', 0, 1);
+        $second = mb_substr($parts[1] ?? ($parts[0] ?? ''), 0, 1);
+
+        return mb_strtoupper($first . $second);
+    }
+
+    /* ===================== RELATIONS ===================== */
+
     public function appartements()
     {
         return $this->hasMany(Appartement::class, 'user_id');
     }
 
-    // Favoris de l'utilisateur (client)
-// Favoris de l'utilisateur (appartements qu'il a ajoutés en favoris)
     public function favoris()
     {
-        return $this->belongsToMany(Appartement::class, 'favoris')
-            ->withTimestamps();
+        return $this->belongsToMany(Appartement::class, 'favoris')->withTimestamps();
     }
 
-
-    // Messages envoyés (côté client)
     public function messages()
     {
         return $this->hasMany(Message::class, 'user_id');
     }
 
-    // Messages reçus (côté bailleur)
     public function messagesRecus()
     {
         return $this->hasMany(Message::class, 'bailleur_id');
     }
 
-    // Paiements effectués par le bailleur
     public function paiements()
     {
         return $this->hasMany(Paiement::class);
     }
 
-    // Publicités créées par le bailleur
     public function publicites()
     {
         return $this->hasMany(Publicite::class);
     }
-    /* =======================================================
-    |                     SCOPES
-    ======================================================= */
 
-    public function scopeAdmins($query)
-    {
-        return $query->where('role', 'admin');
-    }
-
-    public function scopeBailleurs($query)
-    {
-        return $query->where('role', 'bailleur');
-    }
-
-    public function scopeClients($query)
-    {
-        return $query->where('role', 'client');
-    }
-
-
-    /* =======================================================
-     |                     HELPERS
-     ======================================================= */
-
-    public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
-    }
-
-    public function isBailleur(): bool
-    {
-        return $this->role === 'bailleur';
-    }
-
-    public function isClient(): bool
-    {
-        return $this->role === 'client';
-    }
     public function avis()
     {
         return $this->hasMany(Avis::class);
     }
 
+    /* ===================== SCOPES ===================== */
+
+    public function scopeAdmins($query)   { return $query->where('role', 'admin'); }
+    public function scopeBailleurs($query){ return $query->where('role', 'bailleur'); }
+    public function scopeClients($query)  { return $query->where('role', 'client'); }
+
+    /* ===================== HELPERS ===================== */
+
+    public function isAdmin(): bool    { return $this->role === 'admin'; }
+    public function isBailleur(): bool { return $this->role === 'bailleur'; }
+    public function isClient(): bool   { return $this->role === 'client'; }
 }
